@@ -58,9 +58,24 @@ window.App = {
     }).then(function(value) {
       var balance_element = document.getElementById("balance");
       balance_element.innerHTML = value.valueOf();
+      return meta.name.call();
+    }).then(function(value) {
+      $("#token-name").html(value); 
+      return meta.symbol.call();
+    }).then(function(value) {
+      $("#token-symbol").html(value); 
+      return meta.price.call();
+    }).then(function(value) {
+      $("#token-price").html(web3.fromWei(value.toNumber(), 'ether'));
     }).catch(function(e) {
       console.log(e);
       self.setStatus("Error getting balance; see log.");
+    });
+
+    ERC20Token.at('0xd00b88ff47a61f35bad0a82644cf7e0306d73361').then(function(instance) {
+      return instance.balanceOf.call(account);
+    }).then(function(value) {
+      $("#class-token-balance").html(value.toNumber()); 
     });
   },
 
@@ -69,6 +84,16 @@ window.App = {
 
     var amount = parseInt(document.getElementById("amount").value);
     var receiver = document.getElementById("receiver").value;
+
+    console.log(amount);
+    console.log(receiver);
+
+    ERC20Token.deployed().then(function(instance) {
+      instance.transfer(receiver, amount, {from: web3.eth.accounts[0]}).then(function(i) {
+        self.refreshBalance();
+        self.setStatus("Tokens sent!");
+      })
+    })
 
     this.setStatus("Initiating transaction... (please wait)");
   }
